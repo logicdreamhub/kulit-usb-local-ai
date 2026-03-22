@@ -109,7 +109,7 @@ while true; do
     > "$LOG_FILE"
     # Added --no-warmup and --no-mmap for maximum stability
     "$BIN_PATH" -m "$SELECTED_MODEL" --server --host "$HOST" --port "$PORT" \
-      --n-gpu-layers 0 --flash-attn off --no-mmap --no-warmup --no-fit --threads 0 $PARAMS > "$LOG_FILE" 2>&1 &
+      --n-gpu-layers 0 --flash-attn off --no-mmap --no-warmup --no-numa --threads 0 $PARAMS > "$LOG_FILE" 2>&1 &
     SERVER_PID=$!
 
     spin='-\|/'
