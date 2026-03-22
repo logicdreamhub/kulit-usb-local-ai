@@ -1,4 +1,4 @@
-# 🤖 Kulit Server - User Guide
+# 🤖 User Guide
 
 Welcome to **Kulit Server**! This tool allows you to run a powerful AI assistant directly on your computer. It is private, works offline, and doesn't require any subscriptions.
 
