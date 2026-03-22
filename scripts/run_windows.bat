@@ -21,9 +21,9 @@ echo  ==========================================================
 echo.
 echo  [AVAILABLE MODELS]
 set i=0
-for %%f in (%MODEL_DIR%\*.gguf) do (
+for %%f in ("%MODEL_DIR%\*.gguf") do (
     set /a i+=1
-    set "model_!i!=%%f"
+    set "model_!i!=%%~f"
     echo  !i!] %%~nxf
 )
 echo  q] Quit
@@ -44,11 +44,9 @@ echo  ==========================================================
 echo.
 echo  1] Lightweight Mode (Recommended)
 echo     - Uses ~500MB RAM. Fast ^& snappy.
-echo     - Ideal for quick chats and basic tasks.
 echo.
 echo  2] Maximum Mode
 echo     - Uses ~4GB+ RAM. High context capacity.
-echo     - Best for long documents and complex logic.
 echo.
 choice /C 12 /N /M "Select mode (1 or 2): "
 set "MODE_RESULT=%errorlevel%"
@@ -70,30 +68,50 @@ echo.
 echo  Model: %MODEL_NAME%
 echo  URL:   http://%HOST%:%PORT%
 echo.
-echo  Optimizing memory... loading model.
+echo  Loading... please wait.
 echo.
 
+:: Ensure no old instances are running
+taskkill /F /IM kulit.llamafile >nul 2>&1
+
+:: Clear old log
 echo. > "%LOG_FILE%"
+
+:: Start the server
 start /b "" "%BIN_PATH%" -m "%SELECTED_MODEL%" --server --host %HOST% --port %PORT% ^
   --n-gpu-layers 0 --flash-attn on --cont-batching --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
 
-:: --- LOADING ---
+:: --- LOADING ANIMATION ---
 set "spinner=|/-\"
 set /a "spin_idx=0"
+
 :LOADING_LOOP
 set "char=!spinner:~%spin_idx%,1!"
 set /a "spin_idx=(spin_idx+1) %% 4"
-<nul set /p "=^r [%char%] Loading Environment... [##########----------] 50%%"
-findstr /C:"server is listening on" "%LOG_FILE%" >nul
-if %errorlevel% equ 0 goto SUCCESS
-findstr /C:"error" "%LOG_FILE%" >nul
-if %errorlevel% equ 0 goto ERROR
-ping 127.0.0.1 -n 1 -w 500 >nul
+
+:: Update Progress Line (using backspace trick for Windows)
+<nul set /p "=."
+
+:: Check if server is ready
+:: Use a temporary copy of the log to avoid file locking issues
+copy /y "%LOG_FILE%" "%LOG_FILE%.tmp" >nul 2>&1
+findstr /C:"server is listening on" "%LOG_FILE%.tmp" >nul
+if %errorlevel% equ 0 del "%LOG_FILE%.tmp" >nul 2>&1 & goto SUCCESS
+
+findstr /C:"error" "%LOG_FILE%.tmp" >nul
+if %errorlevel% equ 0 del "%LOG_FILE%.tmp" >nul 2>&1 & goto ERROR
+
+:: Check if process is still running
+tasklist /FI "IMAGENAME eq kulit.llamafile" | findstr "kulit.llamafile" >nul
+if %errorlevel% neq 0 del "%LOG_FILE%.tmp" >nul 2>&1 & goto ERROR
+
+:: Small delay
+ping 127.0.0.1 -n 2 >nul
 goto LOADING_LOOP
 
 :SUCCESS
 echo.
-echo  [+] Server is READY!      [####################] 100%%
+echo  [+] Server is READY!
 echo.
 start http://%HOST%:%PORT%
 echo  ----------------------------------------------------------
@@ -110,6 +128,7 @@ if %errorlevel% equ 1 (
 :ERROR
 echo.
 color 0C
-echo  [!] ERROR: Check 'server.log'
+echo  [!] ERROR: Server failed to start.
+echo      Check 'server.log' for details.
 pause
 goto MENU
