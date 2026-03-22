@@ -56,7 +56,7 @@ if "%MODE_RESULT%"=="2" (
     set "PARAMS=--ctx-size 16384 --parallel 2 --cache-type-k f16"
 ) else (
     set "MODE_NAME=LIGHTWEIGHT"
-    set "PARAMS=--ctx-size 4096 --parallel 1 --cache-type-k q8_0"
+    set "PARAMS=--ctx-size 4096 --parallel 1 --cache-type-k f16"
 )
 
 cls

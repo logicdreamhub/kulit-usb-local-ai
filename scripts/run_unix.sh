@@ -86,7 +86,7 @@ while true; do
         PARAMS="--ctx-size 16384 --parallel 2 --cache-type-k f16"
     else
         MODE_NAME="LIGHTWEIGHT"
-        PARAMS="--ctx-size 4096 --parallel 1 --cache-type-k q8_0"
+        PARAMS="--ctx-size 4096 --parallel 1 --cache-type-k f16"
     fi
 
     clear
