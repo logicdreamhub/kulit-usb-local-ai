@@ -11,6 +11,7 @@ set "HOST=127.0.0.1"
 set "PORT=3690"
 set "LOG_FILE=server.log"
 
+:: NEW ENGINE LOGIC: Look for llamafile.exe first
 if exist "bin\llamafile.exe" (
     set "BIN_PATH=bin\llamafile.exe"
 ) else (
@@ -70,7 +71,6 @@ echo  ==========================================================
 echo.
 echo  Engine: %BIN_PATH%
 echo  Model:  %MODEL_NAME%
-echo  URL:    http://%HOST%:%PORT%
 echo.
 echo  Loading... please wait.
 echo.
@@ -80,16 +80,16 @@ taskkill /F /IM kulit.llamafile >nul 2>&1
 
 echo. > "%LOG_FILE%"
 
-:: v0.10.0 Optimized Flags:
-:: --gpu disable       : Force CPU only
-:: --flash-attn off    : Prevent scale crashes
-:: --no-warmup         : Skip initial math test
-:: --numa distribute   : Better CPU thread stability
+:: WINDOWS SAFETY FLAGS:
+:: --no-mmap      : Prevents Windows file-locking/mathematical read errors
+:: --no-warmup    : Skips the initial math test that causes the crash
+:: --gpu disable  : Forces CPU mode
+:: --flash-attn off: Mandatory for CPU stability
 start /b "" "%BIN_PATH%" --server -m "%SELECTED_MODEL%" --host %HOST% --port %PORT% ^
   --gpu disable ^
   --flash-attn off ^
   --no-warmup ^
-  --numa distribute ^
+  --no-mmap ^
   --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
 
 :: --- LOADING ---
