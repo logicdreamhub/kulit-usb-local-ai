@@ -4,6 +4,15 @@ Welcome to **Kulit Server**! This tool allows you to run a powerful AI assistant
 
 ---
 
+## ⚡ Quick Setup (Recommended)
+If you just downloaded this from GitHub, you are missing the AI engine and models.
+1.  **[Download the Full Package Assets here](https://github.com/logicdreamhub/kulit-usb-local-ai/releases/latest)**
+2.  Place the `kulit.llamafile` file inside the **`bin/`** folder.
+3.  Place the `.gguf` model files inside the **`models/`** folder.
+4.  You are now ready to start!
+
+---
+
 ## 🚀 How to Start
 
 Depending on your computer, follow the simple steps below:
