@@ -1,0 +1,11 @@
+# AI Engines & Models
+bin/
+models/
+
+# Logs and temporary files
+*.log
+.DS_Store
+Thumbs.db
+
+# Any OS-specific temporary files
+tmp/
