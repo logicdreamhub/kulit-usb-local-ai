@@ -85,7 +85,7 @@ taskkill /F /IM kulit.llamafile >nul 2>&1
 echo. > "%LOG_FILE%"
 :: Added --no-warmup and --no-mmap for maximum stability
 start /b "" "%BIN_PATH%" -m "%SELECTED_MODEL%" --server --host %HOST% --port %PORT% ^
-  --n-gpu-layers 0 --flash-attn off --no-mmap --no-warmup --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
+  --n-gpu-layers 0 --flash-attn off --no-mmap --no-warmup --no-fit --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
 
 :: --- LOADING ---
 set "spinner=|/-\"
