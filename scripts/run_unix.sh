@@ -101,7 +101,7 @@ while true; do
 
     > "$LOG_FILE"
     "$BIN_PATH" -m "$SELECTED_MODEL" --server --host "$HOST" --port "$PORT" \
-      --n-gpu-layers 0 --flash-attn on --cont-batching --threads 0 $PARAMS > "$LOG_FILE" 2>&1 &
+      --n-gpu-layers 0 --flash-attn off --cont-batching --threads 0 $PARAMS > "$LOG_FILE" 2>&1 &
     SERVER_PID=$!
 
     spin='-\|/'
