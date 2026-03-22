@@ -141,7 +141,19 @@ while true; do
             [[ $opt == [Ss]* ]] && { echo -e "\nStopping..."; stop_server; exit 0; }
         done
     else
-        echo -e "\n${RED}[!] ERROR: Check 'server.log'${NC}"
+        echo -e "\n${RED}[!] ERROR: Failed to start the server.${NC}"
+        if grep -q "assert(fabsf(fval) <= 4194303.f)" "$LOG_FILE"; then
+            echo -e "${YELLOW}"
+            echo -e "  [!] HARDWARE INCOMPATIBILITY DETECTED:"
+            echo -e "  The model \"$MODEL_NAME\" uses advanced quantization"
+            echo -e "  that is not fully supported by your computer's processor."
+            echo -e ""
+            echo -e "  SOLUTION:"
+            echo -e "  Please use a 'Q4_0' or 'Q8_0' version of this model instead."
+            echo -e "${NC}"
+        else
+            echo -e "  Please check 'server.log' for details."
+        fi
         read -p "Press Enter..."
     fi
 done

@@ -57,10 +57,10 @@ set "MODE_RESULT=%errorlevel%"
 
 if "%MODE_RESULT%"=="2" (
     set "MODE_NAME=MAXIMUM"
-    set "PARAMS=--ctx-size 16384 --parallel 2 --cache-type-k f16"
+    set "PARAMS=--ctx-size 8192 --parallel 1 --batch-size 256"
 ) else (
     set "MODE_NAME=LIGHTWEIGHT"
-    set "PARAMS=--ctx-size 4096 --parallel 1 --cache-type-k f16"
+    set "PARAMS=--ctx-size 2048 --parallel 1 --batch-size 128"
 )
 
 cls
@@ -80,17 +80,37 @@ taskkill /F /IM kulit.llamafile >nul 2>&1
 
 echo. > "%LOG_FILE%"
 
+:: WINDOWS STABILITY ENVIRONMENT (llamafile 0.10.0+):
+:: These environment variables tell the engine to avoid buggy math kernels
+set GGML_NO_AVX_VNNI=1
+set GGML_NO_AVX2=1
+set GGML_NO_AVX=1
+set GGML_NO_FMA=1
+set GGML_NO_F16C=1
+
+set LLAMA_CPP_NO_AVX_VNNI=1
+set LLAMA_CPP_NO_AVX2=1
+set LLAMA_CPP_NO_AVX=1
+set LLAMA_CPP_NO_FMA=1
+set LLAMA_CPP_NO_F16C=1
+
 :: WINDOWS SAFETY FLAGS:
-:: --no-mmap      : Prevents Windows file-locking/mathematical read errors
-:: --no-warmup    : Skips the initial math test that causes the crash
-:: --gpu disable  : Forces CPU mode
-:: --flash-attn off: Mandatory for CPU stability
+:: --no-mmap         : Prevents Windows file-locking/math read errors
+:: --no-warmup       : Skips the initial math test that causes the crash
+:: --gpu disable     : Forces CPU mode
+:: --flash-attn off  : Mandatory for CPU stability
+:: --numa distribute : Helps with memory-to-thread affinity stability
+:: --cache-type-k f32: Bypasses buggy quantization math
+:: --cache-type-v f32: Bypasses buggy quantization math
 start /b "" "%BIN_PATH%" --server -m "%SELECTED_MODEL%" --host %HOST% --port %PORT% ^
   --gpu disable ^
   --flash-attn off ^
   --no-warmup ^
   --no-mmap ^
-  --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
+  --numa distribute ^
+  --cache-type-k f32 ^
+  --cache-type-v f32 ^
+  --threads 4 %PARAMS% > "%LOG_FILE%" 2>&1
 
 :: --- LOADING ---
 set "spinner=|/-\"
@@ -127,6 +147,19 @@ if %errorlevel% equ 1 (
 :ERROR
 echo.
 color 0C
-echo  [!] ERROR: Check 'server.log'
+echo  [!] ERROR: Failed to start the server.
+findstr /C:"assert(fabsf(fval) <= 4194303.f)" "%LOG_FILE%" >nul
+if %errorlevel% equ 0 (
+    echo.
+    echo  [!] HARDWARE INCOMPATIBILITY DETECTED:
+    echo  The model "%MODEL_NAME%" uses advanced quantization
+    echo  that is not fully supported by your computer's processor.
+    echo.
+    echo  SOLUTION:
+    echo  Please use a 'Q4_0' or 'Q8_0' version of this model instead.
+    echo.
+) else (
+    echo  Please check 'server.log' for details.
+)
 pause
 goto MENU
