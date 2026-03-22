@@ -35,9 +35,10 @@ Apple has high security for new apps. To start the first time:
 4.  *Note: After doing this once, you can simply double-click the file normally in the future.*
 
 ### **Linux Users**
-1.  **Right-click** the file named **`Start_Linux.desktop`**.
-2.  Select **"Allow Launching"** or **"Trust this executable"**.
-3.  The icon will change. You can now **double-click** it to launch.
+1.  Open your **Terminal**.
+2.  Navigate to the folder where you saved Kulit.
+3.  Run the script by typing: `./Start_Linux.sh`
+    *(Note: If it says permission denied, run `chmod +x Start_Linux.sh` first).*
 
 ---
 
