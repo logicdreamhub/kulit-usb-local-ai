@@ -4,7 +4,6 @@ cd "$(dirname "$0")/.."
 
 # --- CONFIGURATION ---
 MODEL_DIR="models"
-# New Logic: Look for llamafile.exe first, then fall back to kulit.llamafile
 if [ -f "./bin/llamafile.exe" ]; then
     BIN_PATH="./bin/llamafile.exe"
 elif [ -f "./bin/llamafile" ]; then
@@ -89,9 +88,11 @@ while true; do
 
     if [[ "$mode_choice" == "2" ]]; then
         MODE_NAME="MAXIMUM"
+        # v0.10.0 flags
         PARAMS="--ctx-size 16384 --parallel 2 --cache-type-k f16"
     else
         MODE_NAME="LIGHTWEIGHT"
+        # v0.10.0 flags
         PARAMS="--ctx-size 4096 --parallel 1 --cache-type-k f16"
     fi
 
@@ -107,9 +108,19 @@ while true; do
     echo -e "${YELLOW}Loading model... please wait.${NC}"
 
     > "$LOG_FILE"
-    # Added --no-warmup and --no-mmap for maximum stability
-    "$BIN_PATH" -m "$SELECTED_MODEL" --server --host "$HOST" --port "$PORT" \
-      --n-gpu-layers 0 --flash-attn off --no-mmap --no-warmup --no-numa --threads 0 $PARAMS > "$LOG_FILE" 2>&1 &
+    
+    # v0.10.0 Optimized Flags:
+    # --gpu disable       : Force CPU only
+    # --flash-attn off    : Prevent scale crashes
+    # --no-warmup         : Skip initial math test
+    # --numa distribute   : Better CPU thread stability
+    "$BIN_PATH" --server -m "$SELECTED_MODEL" --host "$HOST" --port "$PORT" \
+      --gpu disable \
+      --flash-attn off \
+      --no-warmup \
+      --numa distribute \
+      --threads 0 $PARAMS > "$LOG_FILE" 2>&1 &
+      
     SERVER_PID=$!
 
     spin='-\|/'
@@ -123,10 +134,6 @@ while true; do
     if kill -0 $SERVER_PID 2>/dev/null; then
         printf "\r${GREEN}[+] Server is READY!      [####################] 100%%${NC}\n"
         [[ "$OSTYPE" == "darwin"* ]] && open "http://$HOST:$PORT" || { command -v xdg-open > /dev/null && xdg-open "http://$HOST:$PORT"; }
-        echo ""
-        echo -e "${CYAN}----------------------------------------------------------${NC}"
-        echo -e "${GREEN}   SUCCESS: Server is running!${NC}"
-        echo -e "${CYAN}----------------------------------------------------------${NC}"
         echo ""
         echo -e "   [S] Stop Server & Exit"
         while true; do

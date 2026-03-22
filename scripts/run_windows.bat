@@ -11,7 +11,6 @@ set "HOST=127.0.0.1"
 set "PORT=3690"
 set "LOG_FILE=server.log"
 
-:: NEW ENGINE LOGIC: Look for llamafile.exe first
 if exist "bin\llamafile.exe" (
     set "BIN_PATH=bin\llamafile.exe"
 ) else (
@@ -49,10 +48,8 @@ echo     SELECT PERFORMANCE MODE
 echo  ==========================================================
 echo.
 echo  1] Lightweight Mode (Recommended)
-echo     - Uses ~500MB RAM. Fast ^& snappy.
 echo.
 echo  2] Maximum Mode
-echo     - Uses ~4GB+ RAM. High context capacity.
 echo.
 choice /C 12 /N /M "Select mode (1 or 2): "
 set "MODE_RESULT=%errorlevel%"
@@ -78,14 +75,22 @@ echo.
 echo  Loading... please wait.
 echo.
 
-:: Ensure no old instances are running
 taskkill /F /IM llamafile.exe >nul 2>&1
 taskkill /F /IM kulit.llamafile >nul 2>&1
 
 echo. > "%LOG_FILE%"
-:: Added --no-warmup and --no-mmap for maximum stability
-start /b "" "%BIN_PATH%" -m "%SELECTED_MODEL%" --server --host %HOST% --port %PORT% ^
-  --n-gpu-layers 0 --flash-attn off --no-mmap --no-warmup --no-numa --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
+
+:: v0.10.0 Optimized Flags:
+:: --gpu disable       : Force CPU only
+:: --flash-attn off    : Prevent scale crashes
+:: --no-warmup         : Skip initial math test
+:: --numa distribute   : Better CPU thread stability
+start /b "" "%BIN_PATH%" --server -m "%SELECTED_MODEL%" --host %HOST% --port %PORT% ^
+  --gpu disable ^
+  --flash-attn off ^
+  --no-warmup ^
+  --numa distribute ^
+  --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
 
 :: --- LOADING ---
 set "spinner=|/-\"
@@ -108,7 +113,7 @@ echo  [+] Server is READY!
 echo.
 start http://%HOST%:%PORT%
 echo  ----------------------------------------------------------
-echo     SUCCESS: Server is running in %MODE_NAME% mode!
+echo     SUCCESS: Server is running!
 echo  ----------------------------------------------------------
 echo.
 echo     [S] Stop Server ^& Exit
