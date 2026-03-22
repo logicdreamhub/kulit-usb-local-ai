@@ -4,7 +4,15 @@ cd "$(dirname "$0")/.."
 
 # --- CONFIGURATION ---
 MODEL_DIR="models"
-BIN_PATH="./bin/kulit.llamafile"
+# New Logic: Look for llamafile.exe first, then fall back to kulit.llamafile
+if [ -f "./bin/llamafile.exe" ]; then
+    BIN_PATH="./bin/llamafile.exe"
+elif [ -f "./bin/llamafile" ]; then
+    BIN_PATH="./bin/llamafile"
+else
+    BIN_PATH="./bin/kulit.llamafile"
+fi
+
 HOST="127.0.0.1"
 PORT="3690"
 LOG_FILE="server.log"
@@ -27,7 +35,7 @@ stop_server() {
         kill $SERVER_PID 2>/dev/null
         sleep 0.5
         kill -9 $SERVER_PID 2>/dev/null
-        pkill -f "kulit.llamafile" 2>/dev/null
+        pkill -f "llamafile" 2>/dev/null
     fi
 }
 
@@ -72,12 +80,10 @@ while true; do
     echo ""
     echo -e "${GREEN}1] Lightweight Mode${NC} (Recommended)"
     echo -e "   - Uses ~500MB RAM. Fast & snappy."
-    echo -e "   - Ideal for quick chats and basic tasks."
-    echo ""
+    echo -e ""
     echo -e "${MAGENTA}2] Maximum Mode${NC}"
     echo -e "   - Uses ~4GB+ RAM. High context capacity."
-    echo -e "   - Best for long documents and complex logic."
-    echo ""
+    echo -e ""
     printf "Select mode (1 or 2): "
     read mode_choice
 
@@ -94,14 +100,16 @@ while true; do
     echo -e "${CYAN}   INITIALIZING KULIT SERVER ($MODE_NAME MODE)${NC}"
     echo -e "${CYAN}==========================================================${NC}"
     echo ""
-    echo -e "${GREEN}Model: ${NC} $MODEL_NAME"
-    echo -e "${GREEN}URL:   ${NC} http://$HOST:$PORT"
+    echo -e "${GREEN}Engine: ${NC} $BIN_PATH"
+    echo -e "${GREEN}Model:  ${NC} $MODEL_NAME"
+    echo -e "${GREEN}URL:    ${NC} http://$HOST:$PORT"
     echo ""
     echo -e "${YELLOW}Loading model... please wait.${NC}"
 
     > "$LOG_FILE"
+    # Added --no-warmup and --no-mmap for maximum stability
     "$BIN_PATH" -m "$SELECTED_MODEL" --server --host "$HOST" --port "$PORT" \
-      --n-gpu-layers 0 --flash-attn off --no-mmap --threads 0 $PARAMS > "$LOG_FILE" 2>&1 &
+      --n-gpu-layers 0 --flash-attn off --no-mmap --no-warmup --threads 0 $PARAMS > "$LOG_FILE" 2>&1 &
     SERVER_PID=$!
 
     spin='-\|/'
@@ -114,13 +122,10 @@ while true; do
 
     if kill -0 $SERVER_PID 2>/dev/null; then
         printf "\r${GREEN}[+] Server is READY!      [####################] 100%%${NC}\n"
-        
-        # Auto-launch browser
         [[ "$OSTYPE" == "darwin"* ]] && open "http://$HOST:$PORT" || { command -v xdg-open > /dev/null && xdg-open "http://$HOST:$PORT"; }
-
         echo ""
         echo -e "${CYAN}----------------------------------------------------------${NC}"
-        echo -e "${GREEN}   SUCCESS: Server is running in $MODE_NAME mode!${NC}"
+        echo -e "${GREEN}   SUCCESS: Server is running!${NC}"
         echo -e "${CYAN}----------------------------------------------------------${NC}"
         echo ""
         echo -e "   [S] Stop Server & Exit"

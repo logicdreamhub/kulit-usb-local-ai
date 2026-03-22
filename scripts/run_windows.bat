@@ -7,10 +7,16 @@ cd /d "%~dp0.."
 
 :: --- CONFIGURATION ---
 set "MODEL_DIR=models"
-set "BIN_PATH=bin\kulit.llamafile"
 set "HOST=127.0.0.1"
 set "PORT=3690"
 set "LOG_FILE=server.log"
+
+:: NEW ENGINE LOGIC: Look for llamafile.exe first
+if exist "bin\llamafile.exe" (
+    set "BIN_PATH=bin\llamafile.exe"
+) else (
+    set "BIN_PATH=bin\kulit.llamafile"
+)
 
 :MENU
 cls
@@ -65,47 +71,34 @@ echo  ==========================================================
 echo     INITIALIZING KULIT SERVER (%MODE_NAME% MODE)
 echo  ==========================================================
 echo.
-echo  Model: %MODEL_NAME%
-echo  URL:   http://%HOST%:%PORT%
+echo  Engine: %BIN_PATH%
+echo  Model:  %MODEL_NAME%
+echo  URL:    http://%HOST%:%PORT%
 echo.
 echo  Loading... please wait.
 echo.
 
 :: Ensure no old instances are running
+taskkill /F /IM llamafile.exe >nul 2>&1
 taskkill /F /IM kulit.llamafile >nul 2>&1
 
-:: Clear old log
 echo. > "%LOG_FILE%"
-
-:: Start the server
+:: Added --no-warmup and --no-mmap for maximum stability
 start /b "" "%BIN_PATH%" -m "%SELECTED_MODEL%" --server --host %HOST% --port %PORT% ^
-  --n-gpu-layers 0 --flash-attn off --no-mmap --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
+  --n-gpu-layers 0 --flash-attn off --no-mmap --no-warmup --threads 0 %PARAMS% > "%LOG_FILE%" 2>&1
 
-:: --- LOADING ANIMATION ---
+:: --- LOADING ---
 set "spinner=|/-\"
 set /a "spin_idx=0"
-
 :LOADING_LOOP
 set "char=!spinner:~%spin_idx%,1!"
 set /a "spin_idx=(spin_idx+1) %% 4"
-
-:: Update Progress Line (using backspace trick for Windows)
 <nul set /p "=."
-
-:: Check if server is ready
-:: Use a temporary copy of the log to avoid file locking issues
 copy /y "%LOG_FILE%" "%LOG_FILE%.tmp" >nul 2>&1
 findstr /C:"server is listening on" "%LOG_FILE%.tmp" >nul
 if %errorlevel% equ 0 del "%LOG_FILE%.tmp" >nul 2>&1 & goto SUCCESS
-
 findstr /C:"error" "%LOG_FILE%.tmp" >nul
 if %errorlevel% equ 0 del "%LOG_FILE%.tmp" >nul 2>&1 & goto ERROR
-
-:: Check if process is still running
-tasklist /FI "IMAGENAME eq kulit.llamafile" | findstr "kulit.llamafile" >nul
-if %errorlevel% neq 0 del "%LOG_FILE%.tmp" >nul 2>&1 & goto ERROR
-
-:: Small delay
 ping 127.0.0.1 -n 2 >nul
 goto LOADING_LOOP
 
@@ -121,6 +114,7 @@ echo.
 echo     [S] Stop Server ^& Exit
 choice /C S /N /M "Select option (S): "
 if %errorlevel% equ 1 (
+    taskkill /F /IM llamafile.exe >nul 2>&1
     taskkill /F /IM kulit.llamafile >nul 2>&1
     exit /b
 )
@@ -128,7 +122,6 @@ if %errorlevel% equ 1 (
 :ERROR
 echo.
 color 0C
-echo  [!] ERROR: Server failed to start.
-echo      Check 'server.log' for details.
+echo  [!] ERROR: Check 'server.log'
 pause
 goto MENU
