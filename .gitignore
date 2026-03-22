@@ -1,6 +1,9 @@
-# AI Engines & Models
-bin/
-models/
+# Ignore the contents but keep the folder
+bin/*
+!bin/.gitkeep
+
+models/*
+!models/.gitkeep
 
 # Logs and temporary files
 *.log
