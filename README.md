@@ -11,6 +11,11 @@ If you just downloaded this from GitHub, you are missing the AI engine and model
 3.  Place the `.gguf` model files inside the **`models/`** folder.
 4.  You are now ready to start!
 
+### ⚠️ Hardware Compatibility (If the Server Crashes)
+If your server crashes immediately upon starting with a **"Hardware Incompatibility Detected"** error, your computer's processor does not support the advanced math required by some models (like those ending in `Q4_K_M`).
+*   **The Fix:** You must use models ending in **`Q4_0`** or **`Q8_0`**. These use standard math that works on almost any computer.
+*   **Recommended Model (Great for 8GB RAM):** [Download Llama-3.2-3B-Instruct-Q4_0.gguf](https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_0.gguf) (~1.9 GB). Place this file in your `models/` folder and select it when you start the server.
+
 ---
 
 ## 🚀 How to Start
