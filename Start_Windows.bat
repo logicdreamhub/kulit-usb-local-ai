@@ -1,5 +1,13 @@
 @echo off
-:: Move to the directory where this script is located
+setlocal
 cd /d "%~dp0"
-:: Launch the main script in a new window
-start "" cmd /c "scripts\run_windows.bat"
+
+if exist "Kulit-App.exe" (
+    start "" "Kulit-App.exe"
+) else if exist "bin\llamafile.exe" (
+    echo [!] GUI executable not found. Falling back to legacy CLI...
+    call "scripts\legacy\run_windows.bat"
+) else (
+    echo [!] ERROR: Engine or GUI not found. Please extract all files.
+    pause
+)

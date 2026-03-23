@@ -20,31 +20,28 @@ If your server crashes immediately upon starting with a **"Hardware Incompatibil
 
 ## 🚀 How to Start
 
-Depending on your computer, follow the simple steps below:
-
-### **Windows Users**
-1.  Open the folder where you saved Kulit.
-2.  Double-click the file named **`Start_Windows.bat`**.
-3.  A window will appear. Follow the on-screen instructions to select your model and performance mode.
-
-### **Mac Users** (First-time setup)
-Apple has high security for new apps. To start the first time:
-1.  **Right-click** (or hold Control + Click) the file named **`Start_Mac.command`**.
-2.  Select **Open With** -> **Terminal**.
-3.  A popup will ask if you are sure; click **Open**.
-4.  *Note: After doing this once, you can simply double-click the file normally in the future.*
+The simplest way to start is to use the **Kulit AI Desktop** application for your system:
 
 ### **Linux Users**
-1.  Open your **Terminal**.
-2.  Navigate to the folder where you saved Kulit.
-3.  Run the script by typing: `./Start_Linux.sh`
-    *(Note: If it says permission denied, run `chmod +x Start_Linux.sh` first).*
+1.  Double-click the **`Kulit-App`** file in this folder.
+2.  *(Note: If it doesn't open, run `chmod +x Kulit-App` in your terminal).*
+
+### **Windows & Mac Users**
+*Once compiled, you will see a `Kulit-App.exe` (Windows) or `Kulit-App.app` (Mac) here.*
 
 ---
 
-## ⚙️ Choosing the Right Mode
+## 🛠️ Legacy Launchers (Alternative)
+If you prefer using terminal-based scripts or if the main application is missing, you can find the older launchers in the **`scripts/legacy/`** folder:
+*   **Linux/Mac:** `scripts/legacy/Start_Linux.sh` or `scripts/legacy/Start_Mac.command`
+*   **Windows:** `scripts/legacy/Start_Windows.bat`
 
-When you start the server, you will be asked to choose a "Performance Mode." Here is what they mean:
+---
+
+
+## ⚙️ Performance Modes
+
+When you start the engine in the app, you can choose a "Performance Mode":
 
 *   **1️⃣ Lightweight Mode (Recommended):**
     *   **Best for:** Most users and everyday chat.
@@ -56,26 +53,25 @@ When you start the server, you will be asked to choose a "Performance Mode." Her
 ---
 
 ## 🌍 How to Use the AI
-Once the loading bar reaches **100%**, your web browser will automatically open to the AI interface. 
-*   If it doesn't open automatically, go to this address in your browser: `http://127.0.0.1:3690`
+The app contains its own chat interface. Once the engine is started, you can begin chatting immediately!
+*   No need to open a separate web browser.
 *   Type your message in the chat box at the bottom and press Enter!
 
 ---
 
 ## 🛑 How to Stop
 When you are finished using the AI:
-1.  Go back to the black "Kulit Server" window.
-2.  Press the **[S]** key on your keyboard.
-3.  The window will close, and the AI will stop using your computer's memory.
+1.  Simply close the **Kulit AI Desktop** app window.
+2.  The engine will automatically stop using your computer's memory.
 
 ---
 
 ## 📂 Folders Explained
 *   **models/**: This is where the "brains" of the AI live. You can add more `.gguf` files here to use different models.
-*   **bin/**: Contains the engine that powers the AI. Do not delete this!
-*   **server.log**: If the AI fails to start, this file contains technical details that can help a professional fix the issue.
+*   **bin/**: Contains the engine and GUI components. Do not delete this!
+*   **server.log**: Contains technical details for troubleshooting.
+*   **scripts/legacy/**: Contains old terminal-based launchers for advanced users.
 
----
 
 ### 💡 Quick Tips
 *   **Keep the window open:** If you close the black "Kulit Server" window, the AI will stop working.
